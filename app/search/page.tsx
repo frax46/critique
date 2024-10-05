@@ -6,11 +6,12 @@ import Script from 'next/script';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { FaStar } from 'react-icons/fa';
+import { FaStar, FaSearch } from 'react-icons/fa';
 import toast, { Toaster } from 'react-hot-toast';
 import { useUser } from '@clerk/nextjs';
 import { StartReviewButton } from '@/components/StartReviewButton';
 import { useReviewLogic } from '@/hooks/useReviewLogic';
+import Image from 'next/image';
 
 interface Question {
   id: string;
@@ -31,6 +32,7 @@ declare global {
 }
 
 export default function PropertySearch() {
+  
   const [address, setAddress] = useState('');
   const [searchResult, setSearchResult] = useState<'found' | 'not_found' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,6 +43,8 @@ export default function PropertySearch() {
 
   const [isReviewMode, setIsReviewMode] = useState(false);
   const reviewLogic = useReviewLogic();
+
+  
 
   const initializeAutocomplete = () => {
     if (typeof window.google === 'undefined') return;
@@ -77,7 +81,9 @@ export default function PropertySearch() {
   };
 
   useEffect(() => {
+    
     window.initializeAutocomplete = initializeAutocomplete;
+    
   }, []);
 
   useEffect(() => {
@@ -184,49 +190,68 @@ export default function PropertySearch() {
         src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&callback=initializeAutocomplete`}
         strategy="afterInteractive"
       />
-      <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
-        {!isReviewMode ? (
-          <>
-            <h1 className="text-3xl font-bold mb-8">Search for a Property</h1>
-            <form onSubmit={handleSearch} className="w-full max-w-md">
-              <input
-                ref={autocompleteRef}
-                type="text"
-                placeholder="Enter address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className="w-full p-2 mb-4 border rounded"
-                required
-              />
-              <button
-                type="submit"
-                className="w-full bg-pink-500 text-white p-2 rounded hover:bg-pink-600 transition duration-300"
-                disabled={isLoading}
-              >
-                {isLoading ? 'Searching...' : 'Search'}
-              </button>
-            </form>
-            {searchResult === 'not_found' && (
-              <div className="mt-8 text-center">
-                <p className="text-xl mb-4">Sorry, no property found.</p>
-                <StartReviewButton onClick={handleStartReview} />
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="w-full max-w-md bg-white p-6 rounded-lg shadow-md">
-            {renderReviewStep()}
-            <div className="flex justify-between mt-6">
-              {reviewLogic.reviewStep > 0 && (
-                <Button onClick={reviewLogic.handlePreviousStep} variant="outline">Previous</Button>
+      <main className="min-h-screen w-full bg-blue-50">
+        {/* Hero Section */}
+        <section className="relative h-64 w-full flex flex-col items-center justify-center bg-blue-600 text-white">
+          <div className="absolute inset-0 bg-blue-900 bg-opacity-40" />
+          <div className="relative z-10 text-center px-4">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">Find or Review a Property</h1>
+            <p className="text-xl">Discover your dream home or share your experience</p>
+          </div>
+        </section>
+
+        {/* Search/Review Section */}
+        <section className="py-16">
+          <div className="container mx-auto px-4">
+            <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-xl p-8">
+              {!isReviewMode ? (
+                <>
+                  <h2 className="text-2xl font-bold text-blue-800 mb-6">Search for a Property</h2>
+                  <form onSubmit={handleSearch} className="space-y-4">
+                    <div className="relative">
+                      <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <Input
+                        ref={autocompleteRef}
+                        type="text"
+                        placeholder="Enter address"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        className="pl-10 w-full border-blue-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                        required
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full bg-blue-500 hover:bg-blue-600 text-white transition duration-300"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'Searching...' : 'Search'}
+                    </Button>
+                  </form>
+                  {searchResult === 'not_found' && (
+                    <div className="mt-8 text-center">
+                      <p className="text-xl text-gray-600 mb-4">Sorry, no property found.</p>
+                      <StartReviewButton onClick={handleStartReview} />
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="space-y-6">
+                  {renderReviewStep()}
+                  <div className="flex justify-between mt-6">
+                    {reviewLogic.reviewStep > 0 && (
+                      <Button onClick={reviewLogic.handlePreviousStep} variant="outline">Previous</Button>
+                    )}
+                    <Button onClick={reviewLogic.handleNextStep} className="ml-auto bg-blue-500 hover:bg-blue-600 text-white">
+                      {reviewLogic.reviewStep <= reviewLogic.questions.length ? 'Next' : 'Submit Review'}
+                    </Button>
+                  </div>
+                </div>
               )}
-              <Button onClick={reviewLogic.handleNextStep} className="ml-auto">
-                {reviewLogic.reviewStep <= reviewLogic.questions.length ? 'Next' : 'Submit Review'}
-              </Button>
             </div>
           </div>
-        )}
-      </div>
+        </section>
+      </main>
       <Toaster />
     </>
   );

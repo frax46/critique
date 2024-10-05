@@ -51,10 +51,26 @@ model Answer {
 }
 
 model Subscription {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  tier            Int
+  userId          String   @db.ObjectId
+  user            User     @relation(fields: [userId], references: [id])
+  expiresAt       DateTime
+  stripeCustomerId String?
+  stripePriceId   String?
+  stripeSubscriptionId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model SubscriptionTier {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  tier        Int
-  userId      String   @db.ObjectId
-  user        User     @relation(fields: [userId], references: [id])
-  expiresAt   DateTime
+  name        String
+  description String
+  price       Float
+  duration    Int      // Duration in days
+  stripePriceId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
