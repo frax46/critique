@@ -23,25 +23,29 @@ export async function POST(req: Request) {
         const session = event.data.object as Stripe.Checkout.Session
         const costumerDetails = session.customer_details
         
+        
         if (costumerDetails?.email) {
            const user = await prisma.user.findUnique({
             where: {
                 email: costumerDetails.email
             }
            })
-           if(user){
-           await prisma.subscription.create({
-            data: {
-                    userId: user?.id,
-                    tier: 1,
-                    
-                    expiresAt: new Date(Date.now() + (session.expires_at || 0) * 1000)
-                }
-            })
-        }
+           if(user && session.metadata){
+                const duration = parseInt(session.metadata.duration);
+                const currentDate = new Date();
+                const expirationDate = new Date(currentDate.getTime() + duration * 24 * 60 * 60 * 1000);
+                
+                await prisma.subscription.create({
+                    data: {
+                        userId: user?.id,
+                        tier: parseInt(session.metadata.tier),
+                        expiresAt: expirationDate
+                    }
+                });
+            }
                 
          
-    }
+        }
 
    } return new Response('Webhook processed', { status: 200 })
 }

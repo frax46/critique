@@ -12,6 +12,7 @@ export async function POST(req: Request) {
   try {
     const { tierId } = await req.json();
     const tier = await prisma.subscriptionTier.findUnique({ where: { id: tierId } });
+    console.log(tier)
     
 
     if (!tier) {

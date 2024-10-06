@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FaBars, FaTimes } from 'react-icons/fa';
+import { FaBars, FaTimes, FaSearch } from 'react-icons/fa';
 import { useUser, SignInButton, UserButton } from '@clerk/nextjs';
 import Image from 'next/image';
 
@@ -40,6 +40,9 @@ const Navbar = () => {
             <NavLink href="/services">Services</NavLink>
             <NavLink href="/contact">Contact</NavLink>
             <NavLink href="/subscribe">Subscribe</NavLink>
+            <NavLink href="/search">
+              <FaSearch className="text-blue-600 dark:text-blue-300" />
+            </NavLink>
             {user && user.primaryEmailAddress?.emailAddress === 'annobilfrance@gmail.com' && (
               <NavLink href="/dashboard">Dashboard</NavLink>
             )}
@@ -67,6 +70,12 @@ const Navbar = () => {
           <NavLink href="/services" mobile>Services</NavLink>
           <NavLink href="/contact" mobile>Contact</NavLink>
           <NavLink href="/subscribe" mobile>Subscribe</NavLink>
+          <NavLink href="/search" mobile>
+            <div className="flex items-center">
+              <FaSearch className="mr-2" />
+              Search
+            </div>
+          </NavLink>
           {user && user.primaryEmailAddress?.emailAddress === 'annobilfrance@gmail.com' && (
             <NavLink href="/dashboard" mobile>Dashboard</NavLink>
           )}
