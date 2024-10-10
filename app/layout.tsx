@@ -24,7 +24,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={`${inter.className} bg-white dark:bg-gray-900`}>
+        <body className={`${inter.className} bg-white`}>
           <ModalProvider />
           <ToasterProvider />
           <Navbar />

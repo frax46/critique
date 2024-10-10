@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import axios from 'axios';
+import Image from 'next/image';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -16,7 +17,6 @@ interface SubscriptionTier {
 
 export default function SubscribePage() {
   const [tiers, setTiers] = useState<SubscriptionTier[]>([]);
-  
 
   useEffect(() => {
     const fetchTiers = async () => {
@@ -41,56 +41,56 @@ export default function SubscribePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 dark:from-purple-900 dark:via-pink-900 dark:to-red-900 p-8 pt-20 flex items-center justify-center relative overflow-hidden">
-      {/* Decorative SVG pattern */}
-      <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <pattern id="pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-            <circle cx="20" cy="20" r="8" fill="rgba(255,255,255,0.1)" />
-          </pattern>
-        </defs>
-        <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern)" />
-      </svg>
+    <main className="min-h-screen w-full bg-blue-50">
+      {/* Hero Section */}
+      <section className="relative h-64 w-full flex flex-col items-center justify-center mb-12">
+        <Image
+          src="/background.png"
+          alt="Subscribe background"
+          layout="fill"
+          objectFit="cover"
+          quality={100}
+          priority
+        />
+        <div className="absolute inset-0 bg-blue-900 bg-opacity-40" />
+        <div className="relative z-10 text-center px-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            Choose Your Subscription
+          </h1>
+        </div>
+      </section>
 
-      <div className="max-w-6xl w-full mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden relative z-10">
-        <div className="p-8">
-          <h1 className="text-4xl font-bold mb-8 text-center text-gray-800 dark:text-white">Choose Your Subscription</h1>
+      {/* Subscription Tiers Section */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {tiers.map((tier) => (
-              <div key={tier.id} className="bg-gray-100 dark:bg-gray-700 rounded-xl p-6 flex flex-col">
-                <h2 className="text-2xl font-semibold mb-2 text-gray-800 dark:text-white">{tier.name}</h2>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">{tier.description}</p>
-                <p className="text-3xl font-bold mb-4 text-purple-600 dark:text-purple-400">£{tier.price}</p>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">Duration: {tier.duration} days</p>
-                <button
-                  onClick={() => handleSubscribe(tier.id)}
-                  className="mt-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300"
-                >
-                  Subscribe
-                </button>
+              <div key={tier.id} className="bg-white rounded-lg overflow-hidden shadow-md transition duration-300 hover:shadow-xl">
+                <div className="p-6">
+                  <h2 className="text-2xl font-semibold mb-2 text-blue-800">{tier.name}</h2>
+                  <p className="text-gray-600 mb-4">{tier.description}</p>
+                  <p className="text-3xl font-bold mb-4 text-blue-600">£{tier.price}</p>
+                  <p className="text-gray-600 mb-6">Duration: {tier.duration} days</p>
+                  <button
+                    onClick={() => handleSubscribe(tier.id)}
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300"
+                  >
+                    Subscribe
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Animated floating shapes */}
-      <div className="absolute inset-0 pointer-events-none">
-        {[...Array(5)].map((_, i) => (
-          <div 
-            key={i}
-            className="absolute rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              width: `${Math.random() * 300 + 50}px`,
-              height: `${Math.random() * 300 + 50}px`,
-              backgroundColor: ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff'][i],
-              animationDelay: `${i * 0.5}s`,
-            }}
-          />
-        ))}
-      </div>
-    </div>
+      {/* Call to Action Section */}
+      <section className="py-16 bg-blue-600 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to unlock premium features?</h2>
+          <p className="text-xl mb-8">Choose a plan that suits your needs and start enjoying exclusive benefits today.</p>
+        </div>
+      </section>
+    </main>
   );
 }
