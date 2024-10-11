@@ -6,7 +6,7 @@ type DashboardContentProps = {
 
 export function DashboardContent({ children }: DashboardContentProps) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+    <div className="bg-white rounded-lg shadow-lg p-6">
       {children}
     </div>
   );

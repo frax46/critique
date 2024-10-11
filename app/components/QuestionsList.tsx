@@ -150,14 +150,14 @@ export function QuestionsList() {
         {questions.map((question) => (
           <li 
             key={question.id} 
-            className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md flex items-center justify-between transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-[1.02]"
+            className="bg-white  p-4 rounded-lg shadow-md flex items-center justify-between transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-[1.02]"
           >
             <p className="text-lg flex-grow">{question.text}</p>
             <div className="flex space-x-2 ml-4">
               <Button 
                 variant="outline" 
                 onClick={() => openDialog(question)} 
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-300"
+                className="p-2 hover:bg-gray-100  transition-colors duration-300"
               >
                 <FaEdit className="w-4 h-4" />
               </Button>

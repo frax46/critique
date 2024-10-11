@@ -19,7 +19,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-8">
+    <div className="min-h-screen bg-gray-100  p-8">
       <div className="max-w-4xl mx-auto">
         <DashboardHeader user={user} />
         <DashboardNav />

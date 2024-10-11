@@ -7,7 +7,7 @@ export default function DashboardPage() {
     <>
       <DashboardSummary />
       <div className="mt-8">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">Create a New Question</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-gray-800 ">Create a New Question</h2>
         <QuestionForm />
       </div>
     </>

@@ -2,7 +2,8 @@ import React from 'react';
 import { PrismaClient } from '@prisma/client';
 import { PropertyDetails } from '@/components/property/PropertyDetails';
 import { StartReviewButton } from '@/components/StartReviewButton';
-import Link from 'next/link';
+import { auth, currentUser } from '@clerk/nextjs/server';
+import { ReviewLink } from '@/app/components/property/ReviewLink';
 
 const prisma = new PrismaClient();
 
@@ -27,8 +28,49 @@ async function getPropertyWithUsers(id: string) {
   return property;
 }
 
+async function getUserSubscriptionStatus(userId: string | null) {
+  if (!userId) return false;
+  
+  try {
+    const subscription = await prisma.subscription.findFirst({
+      where: {
+        userId: userId,
+        expiresAt: {
+          gt: new Date(),
+        },
+      },
+    });
+
+    if (subscription) {
+      console.log("Found subscription:", subscription);
+      return true;
+    } else {
+      console.log("No active subscription found for user:", userId);
+      return false;
+    }
+  } catch (error) {
+    console.error("Error checking subscription status:", error);
+    // If there's an error (including invalid ObjectID), assume no active subscription
+    return false;
+  }
+}
+
 export default async function PropertyPage({ params }: { params: { id: string } }) {
-  const property = await getPropertyWithUsers(params.id);
+  const user = await currentUser();
+  
+  let property;
+  let hasActiveSubscription = false;
+
+  try {
+    property = await getPropertyWithUsers(params.id);
+    if (user) {
+      const dbUser = await prisma.user.findUnique({ where: { email: user.emailAddresses[0].emailAddress } })
+      hasActiveSubscription = await getUserSubscriptionStatus(dbUser?.id || null);
+    }
+  } catch (error) {
+    console.error("Error fetching property or subscription status:", error);
+    return <div>Error loading property information</div>;
+  }
 
   if (!property) {
     return <div>Property not found</div>;
@@ -59,12 +101,13 @@ export default async function PropertyPage({ params }: { params: { id: string } 
       <h2 className="text-2xl font-bold mb-4">User Reviews</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {property.answers.map((answer) => (
-          <Link href={`/property/${property.id}/user/${answer.userId}`} key={answer.userId}>
-            <div className="bg-white shadow-md rounded-lg p-4 hover:shadow-lg transition-shadow">
-              <p className="font-semibold">User Review by {answer.user.name || 'Anonymous'}</p>
-              <p className="text-sm text-gray-600 mt-2">Click to view details</p>
-            </div>
-          </Link>
+          <ReviewLink
+            key={answer.userId}
+            hasActiveSubscription={hasActiveSubscription}
+            propertyId={property.id}
+            userId={answer.userId}
+            userName={answer.user.name || 'Anonymous'}
+          />
         ))}
       </div>
     </div>

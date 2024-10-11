@@ -4,25 +4,28 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
-  const { address } = await request.json();
+  const { postcode, houseNumber, address } = await request.json();
 
   try {
-    const property = await prisma.property.findFirst({
+    const properties = await prisma.property.findMany({
       where: {
-        address: {
-          contains: address,
-          mode: 'insensitive',
-        },
+        AND: [
+          { postcode: { equals: postcode, mode: 'insensitive' } },
+          { houseNumber: { equals: houseNumber, mode: 'insensitive' } },
+          address ? { address: { contains: address, mode: 'insensitive' } } : {}
+        ]
       },
     });
 
-    if (property) {
-      return NextResponse.json({ found: true, property });
+    if (properties.length > 0) {
+      return NextResponse.json({ found: true, properties });
     } else {
       return NextResponse.json({ found: false });
     }
   } catch (error) {
-    console.error('Error searching for property:', error);
-    return NextResponse.json({ error: 'An error occurred while searching for the property' }, { status: 500 });
+    console.error('Error searching for properties:', error);
+    return NextResponse.json({ error: 'An error occurred while searching for properties' }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
   }
 }
