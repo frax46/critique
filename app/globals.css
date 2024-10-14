@@ -71,3 +71,22 @@ html,body,:root{
   animation: float 6s ease-in-out infinite;
 }
 
+@keyframes growButton {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.get-started-btn {
+  transition: all 0.3s ease;
+}
+
+.get-started-btn:hover {
+  animation: growButton 1s ease-in-out;
+}

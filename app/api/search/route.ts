@@ -4,14 +4,13 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
-  const { postcode, houseNumber, address } = await request.json();
+  const { postcode,address } = await request.json();
 
   try {
     const properties = await prisma.property.findMany({
       where: {
         AND: [
           { postcode: { equals: postcode, mode: 'insensitive' } },
-          { houseNumber: { equals: houseNumber, mode: 'insensitive' } },
           address ? { address: { contains: address, mode: 'insensitive' } } : {}
         ]
       },

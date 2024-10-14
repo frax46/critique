@@ -1,15 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FaStar, FaSearch } from 'react-icons/fa';
-import toast, { Toaster } from 'react-hot-toast';
-import { useUser } from '@clerk/nextjs';
 import { StartReviewButton } from '@/components/StartReviewButton';
 import { useReviewLogic } from '@/hooks/useReviewLogic';
+import Script from 'next/script';
 
 interface Property {
   id: string;
@@ -18,28 +17,83 @@ interface Property {
   houseNumber: string;
 }
 
+declare global {
+  interface Window {
+    google: any;
+    initAutocomplete: () => void;
+  }
+}
+
 export default function PropertySearch() {
-  const [postcode, setPostcode] = useState('');
-  const [houseNumber, setHouseNumber] = useState('');
   const [address, setAddress] = useState('');
+  const [postcode, setPostcode] = useState('');
   const [searchResult, setSearchResult] = useState<'found' | 'not_found' | null>(null);
   const [foundProperties, setFoundProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAddressSelected, setIsAddressSelected] = useState(false);
   const router = useRouter();
-  const { user, isLoaded } = useUser();
+  const autocompleteInput = useRef<HTMLInputElement>(null);
+  const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
 
   const [isReviewMode, setIsReviewMode] = useState(false);
   const reviewLogic = useReviewLogic();
 
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.google && !isGoogleLoaded) {
+      setIsGoogleLoaded(true);
+    }
+  }, [isGoogleLoaded]);
+
+  useEffect(() => {
+    if (isGoogleLoaded && autocompleteInput.current) {
+      initializeAutocomplete();
+    }
+  }, [isGoogleLoaded]);
+
+  const initializeAutocomplete = () => {
+    if (autocompleteInput.current && window.google) {
+      const autocomplete = new window.google.maps.places.Autocomplete(autocompleteInput.current, {
+        types: ['address'],
+        fields: ['address_components', 'formatted_address'],
+        componentRestrictions: { country: "uk" },
+      });
+
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        if (place.formatted_address) {
+          setAddress(place.formatted_address);
+          setIsAddressSelected(true);
+
+          // Extract postcode from address components
+          const postcodeComponent = place.address_components.find(
+            (component: any) => component.types.includes('postal_code')
+          );
+          if (postcodeComponent) {
+            setPostcode(postcodeComponent.long_name);
+          }
+        }
+      });
+    }
+  };
+
+  const handleScriptLoad = () => {
+    setIsGoogleLoaded(true);
+  };
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAddressSelected) {
+      alert('Please select an address from the autocomplete options.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const response = await fetch('/api/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ postcode, houseNumber, address }),
+        body: JSON.stringify({ address, postcode }),
       });
 
       const data = await response.json();
@@ -60,9 +114,8 @@ export default function PropertySearch() {
 
   const handleStartReview = () => {
     setIsReviewMode(true);
-    reviewLogic.setPostcode(postcode);
-    reviewLogic.setHouseNumber(houseNumber);
     reviewLogic.setReviewAddress(address);
+    reviewLogic.setPostcode(postcode);
   };
 
   const renderStars = (questionId: string) => {
@@ -91,12 +144,7 @@ export default function PropertySearch() {
             onChange={(e) => reviewLogic.setPostcode(e.target.value)}
           />
           <Input
-            placeholder="House Number"
-            value={reviewLogic.houseNumber}
-            onChange={(e) => reviewLogic.setHouseNumber(e.target.value)}
-          />
-          <Input
-            placeholder="Address (Optional)"
+            placeholder="Address"
             value={reviewLogic.reviewAddress}
             onChange={(e) => reviewLogic.setReviewAddress(e.target.value)}
           />
@@ -121,7 +169,6 @@ export default function PropertySearch() {
         <div className="space-y-4">
           <h2 className="text-2xl font-bold">Review Summary</h2>
           <p>Postcode: {reviewLogic.postcode}</p>
-          <p>House Number: {reviewLogic.houseNumber}</p>
           <p>Address: {reviewLogic.reviewAddress}</p>
           {reviewLogic.answers.map((answer, index) => (
             <div key={answer.questionId} className="border-t pt-2">
@@ -137,6 +184,11 @@ export default function PropertySearch() {
 
   return (
     <main className="min-h-screen w-full bg-blue-50">
+      <Script
+        src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
+        onLoad={handleScriptLoad}
+      />
+
       {/* Hero Section */}
       <section className="relative h-64 w-full flex flex-col items-center justify-center bg-blue-600 text-white">
         <div className="absolute inset-0 bg-blue-900 bg-opacity-40" />
@@ -155,53 +207,30 @@ export default function PropertySearch() {
                 <h2 className="text-2xl font-bold text-blue-800 mb-6">Search for a Property</h2>
                 <form onSubmit={handleSearch} className="space-y-6">
                   <div className="relative">
-                    <label htmlFor="postcode" className="block text-sm font-medium text-gray-700 mb-1 transition-all duration-200 ease-in-out group-focus-within:text-blue-600">
-                      Postcode
+                    <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1 transition-all duration-200 ease-in-out group-focus-within:text-blue-600">
+                      Address
                     </label>
                     <div className="relative group">
                       <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 transition-colors duration-200 ease-in-out group-focus-within:text-blue-500" />
                       <Input
-                        id="postcode"
+                        id="address"
+                        ref={autocompleteInput}
                         type="text"
-                        placeholder="Enter postcode"
-                        value={postcode}
-                        onChange={(e) => setPostcode(e.target.value)}
+                        placeholder="Enter address"
+                        value={address}
+                        onChange={(e) => {
+                          setAddress(e.target.value);
+                          setIsAddressSelected(false);
+                        }}
                         className="pl-10 w-full border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition-all duration-200 ease-in-out"
                         required
                       />
                     </div>
                   </div>
-                  <div className="relative">
-                    <label htmlFor="houseNumber" className="block text-sm font-medium text-gray-700 mb-1 transition-all duration-200 ease-in-out group-focus-within:text-blue-600">
-                      House Number
-                    </label>
-                    <Input
-                      id="houseNumber"
-                      type="text"
-                      placeholder="Enter house number"
-                      value={houseNumber}
-                      onChange={(e) => setHouseNumber(e.target.value)}
-                      className="w-full border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition-all duration-200 ease-in-out"
-                      required
-                    />
-                  </div>
-                  <div className="relative">
-                    <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1 transition-all duration-200 ease-in-out group-focus-within:text-blue-600">
-                      Address (Optional)
-                    </label>
-                    <Input
-                      id="address"
-                      type="text"
-                      placeholder="Enter address"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      className="w-full border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition-all duration-200 ease-in-out"
-                    />
-                  </div>
                   <Button
                     type="submit"
                     className="w-full bg-blue-500 hover:bg-blue-600 text-white transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-                    disabled={isLoading}
+                    disabled={isLoading || !isAddressSelected}
                   >
                     {isLoading ? 'Searching...' : 'Search'}
                   </Button>

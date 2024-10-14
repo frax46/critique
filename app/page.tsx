@@ -1,8 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FaSearch, FaHome, FaClipboardList } from "react-icons/fa";
+import ReviewCard from "./components/ReviewCard";
 
-export default function Home() {
+
+async function getRandomReviews() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/reviews/random`, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error('Failed to fetch reviews');
+  }
+  return res.json();
+}
+
+export default async function Home() {
+  let randomReviews = [];
+  try {
+    randomReviews = await getRandomReviews();
+  } catch (error) {
+    console.error('Failed to fetch random reviews:', error);
+    // You might want to set an error state here or handle the error in some way
+  }
+
   return (
     <main className="min-h-screen w-full">
       {/* Hero Section */}
@@ -21,10 +39,22 @@ export default function Home() {
             Find the house of your dreams
           </h1>
           <Link href="/search">
-            <button className="bg-blue-500 text-white px-8 py-3 rounded-full font-semibold text-lg hover:bg-blue-600 transition duration-300 transform hover:scale-105 shadow-lg">
+            <button className="get-started-btn bg-gradient-to-r from-blue-500 to-purple-600 text-white px-10 py-4 rounded-full font-bold text-xl hover:from-blue-600 hover:to-purple-700 transition duration-300 shadow-lg mb-8">
               Get Started
             </button>
           </Link>
+          
+          {/* Random Reviews */}
+          {randomReviews.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-2xl font-bold text-white mb-4">What our users say</h2>
+              <div className="flex flex-wrap justify-center gap-4">
+                {randomReviews.map((review: any) => (
+                  <ReviewCard key={review.id} review={review} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

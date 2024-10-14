@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
-import { useUser } from '@clerk/nextjs';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { useUser } from "@clerk/nextjs";
 
 interface Question {
   id: string;
@@ -17,9 +17,8 @@ interface Answer {
 export function useReviewLogic(propertyId?: string, initialAddress?: string) {
   const [reviewStep, setReviewStep] = useState(initialAddress ? 1 : 0);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [reviewAddress, setReviewAddress] = useState('');
-  const [postcode, setPostcode] = useState('');
-  const [houseNumber, setHouseNumber] = useState('');
+  const [reviewAddress, setReviewAddress] = useState("");
+  const [postcode, setPostcode] = useState("");
   const [answers, setAnswers] = useState<Answer[]>([]);
   const router = useRouter();
   const { user, isLoaded } = useUser();
@@ -32,11 +31,10 @@ export function useReviewLogic(propertyId?: string, initialAddress?: string) {
   }, [initialAddress]);
 
   const parseInitialAddress = (address: string) => {
-    const parts = address.split(',').map(part => part.trim());
+    const parts = address.split(",").map((part) => part.trim());
     if (parts.length >= 3) {
-      setReviewAddress(parts.slice(0, -2).join(', '));
+      setReviewAddress(parts.slice(0, -2).join(", "));
       setPostcode(parts[parts.length - 2]);
-      setHouseNumber(parts[parts.length - 1]);
     } else {
       setReviewAddress(address);
     }
@@ -44,33 +42,41 @@ export function useReviewLogic(propertyId?: string, initialAddress?: string) {
 
   const fetchQuestions = async () => {
     try {
-      const response = await fetch('/api/questions');
+      const response = await fetch("/api/questions");
       const data = await response.json();
       setQuestions(data);
     } catch (error) {
-      console.error('Error fetching questions:', error);
-      toast.error('Failed to load questions. Please try again.');
+      console.error("Error fetching questions:", error);
+      toast.error("Failed to load questions. Please try again.");
     }
   };
 
   const handleNextStep = () => {
     if (reviewStep === 0) {
-      if (!reviewAddress || !postcode || !houseNumber) {
-        toast.error('Please enter a complete address, including postcode and house number');
+      if (!reviewAddress || !postcode) {
+        toast.error(
+          "Please enter a complete address, including postcode and house number"
+        );
         return;
       }
       setReviewStep(1);
       return;
     }
-    
+
     if (reviewStep <= questions.length) {
-      const currentAnswer = answers.find((a) => a.questionId === questions[reviewStep - 1].id);
-      if (!currentAnswer || currentAnswer.rating === 0 || !currentAnswer.text.trim()) {
-        toast.error('Please provide a rating and answer');
+      const currentAnswer = answers.find(
+        (a) => a.questionId === questions[reviewStep - 1].id
+      );
+      if (
+        !currentAnswer ||
+        currentAnswer.rating === 0 ||
+        !currentAnswer.text.trim()
+      ) {
+        toast.error("Please provide a rating and answer");
         return;
       }
     }
-    
+
     if (reviewStep < questions.length) {
       setReviewStep(reviewStep + 1);
     } else if (reviewStep === questions.length) {
@@ -86,70 +92,77 @@ export function useReviewLogic(propertyId?: string, initialAddress?: string) {
 
   const handleSubmitReview = async () => {
     if (!isLoaded || !user || !user.id) {
-      toast.error('Please log in to submit a review');
+      toast.error("Please log in to submit a review");
       return;
     }
 
     if (answers.length !== questions.length) {
-      toast.error('Please answer all questions');
+      toast.error("Please answer all questions");
       return;
     }
 
     try {
-      const reviewData = { 
+      const reviewData = {
         propertyId,
-        address: reviewAddress, 
+        address: reviewAddress,
         postcode, // Include postcode
-        houseNumber, // Include houseNumber
-        answers: answers.map(answer => ({
+        answers: answers.map((answer) => ({
           questionId: answer.questionId,
           rating: answer.rating,
-          text: answer.text
+          text: answer.text,
         })),
-        userId: user.id
+        userId: user.id,
       };
-      
-      console.log('Submitting review data:', reviewData);
 
-      const response = await fetch('/api/submit-review', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      console.log("Submitting review data:", reviewData);
+
+      const response = await fetch("/api/submit-review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(reviewData),
       });
 
       if (response.ok) {
         const data = await response.json();
-        toast.success('Review submitted successfully');
+        toast.success("Review submitted successfully");
         setReviewStep(0);
         setAnswers([]);
-        router.push('/thank-you');
+        router.push("/thank-you");
       } else {
         const errorData = await response.json();
-        console.error('Server response:', errorData);
-        throw new Error(errorData.error || 'Failed to submit review');
+        console.error("Server response:", errorData);
+        throw new Error(errorData.error || "Failed to submit review");
       }
     } catch (error) {
-      console.error('Error submitting review:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to submit review. Please try again.');
+      console.error("Error submitting review:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to submit review. Please try again."
+      );
     }
   };
 
   const handleRatingChange = (questionId: string, rating: number) => {
-    setAnswers(prev => {
-      const existingAnswer = prev.find(a => a.questionId === questionId);
+    setAnswers((prev) => {
+      const existingAnswer = prev.find((a) => a.questionId === questionId);
       if (existingAnswer) {
-        return prev.map(a => a.questionId === questionId ? { ...a, rating } : a);
+        return prev.map((a) =>
+          a.questionId === questionId ? { ...a, rating } : a
+        );
       } else {
-        return [...prev, { questionId, rating, text: '' }];
+        return [...prev, { questionId, rating, text: "" }];
       }
     });
   };
 
   const handleTextChange = (questionId: string, text: string) => {
-    setAnswers(prev => {
-      const existingAnswer = prev.find(a => a.questionId === questionId);
+    setAnswers((prev) => {
+      const existingAnswer = prev.find((a) => a.questionId === questionId);
       if (existingAnswer) {
-        return prev.map(a => a.questionId === questionId ? { ...a, text } : a);
+        return prev.map((a) =>
+          a.questionId === questionId ? { ...a, text } : a
+        );
       } else {
         return [...prev, { questionId, rating: 0, text }];
       }
@@ -163,8 +176,6 @@ export function useReviewLogic(propertyId?: string, initialAddress?: string) {
     setReviewAddress,
     postcode,
     setPostcode,
-    houseNumber,
-    setHouseNumber,
     answers,
     handleNextStep,
     handlePreviousStep,
