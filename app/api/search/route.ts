@@ -1,30 +1,31 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 
 export async function POST(request: Request) {
-  const { postcode,address } = await request.json();
+  const { postcode, address } = await request.json();
+
+  // Normalize the postcode: remove spaces and convert to uppercase
+  const normalizedPostcode = postcode.replace(/\s+/g, '').toUpperCase();
 
   try {
     const properties = await prisma.property.findMany({
       where: {
-        AND: [
-          { postcode: { equals: postcode, mode: 'insensitive' } },
-          address ? { address: { contains: address, mode: 'insensitive' } } : {}
-        ]
+        postcode: {
+          equals: normalizedPostcode,
+          mode: 'insensitive', // This makes the search case-insensitive
+        },
+        ...(address && {
+          address: {
+            contains: address,
+            mode: 'insensitive',
+          },
+        }),
       },
     });
 
-    if (properties.length > 0) {
-      return NextResponse.json({ found: true, properties });
-    } else {
-      return NextResponse.json({ found: false });
-    }
+    return NextResponse.json({ properties });
   } catch (error) {
     console.error('Error searching for properties:', error);
     return NextResponse.json({ error: 'An error occurred while searching for properties' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }

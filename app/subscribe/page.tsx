@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import axios from 'axios';
-import Image from 'next/image';
+import Link from 'next/link';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -41,36 +41,27 @@ export default function SubscribePage() {
   };
 
   return (
-    <main className="min-h-screen w-full bg-blue-50">
-      {/* Hero Section */}
-      <section className="relative h-64 w-full flex flex-col items-center justify-center mb-12">
-        <Image
-          src="/background.png"
-          alt="Subscribe background"
-          layout="fill"
-          objectFit="cover"
-          quality={100}
-          priority
-        />
-        <div className="absolute inset-0 bg-blue-900 bg-opacity-40" />
-        <div className="relative z-10 text-center px-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Choose Your Subscription
-          </h1>
-        </div>
-      </section>
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center p-4">
+      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 max-w-4xl w-full">
+        {/* Decorative SVG shapes */}
+        <svg className="absolute top-0 left-0 -mt-12 -ml-12 text-blue-500 opacity-50 h-24 w-24" fill="currentColor" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" />
+        </svg>
+        <svg className="absolute bottom-0 right-0 -mb-12 -mr-12 text-purple-500 opacity-50 h-24 w-24" fill="currentColor" viewBox="0 0 100 100">
+          <rect x="10" y="10" width="80" height="80" rx="20" />
+        </svg>
 
-      {/* Subscription Tiers Section */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="relative z-10">
+          <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-6 text-center">Choose Your Subscription</h1>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             {tiers.map((tier) => (
-              <div key={tier.id} className="bg-white rounded-lg overflow-hidden shadow-md transition duration-300 hover:shadow-xl">
+              <div key={tier.id} className="bg-blue-50 dark:bg-blue-900 rounded-lg overflow-hidden shadow-md transition duration-300 hover:shadow-xl">
                 <div className="p-6">
-                  <h2 className="text-2xl font-semibold mb-2 text-blue-800">{tier.name}</h2>
-                  <p className="text-gray-600 mb-4">{tier.description}</p>
-                  <p className="text-3xl font-bold mb-4 text-blue-600">£{tier.price}</p>
-                  <p className="text-gray-600 mb-6">Duration: {tier.duration} days</p>
+                  <h2 className="text-2xl font-semibold mb-2 text-blue-800 dark:text-blue-300">{tier.name}</h2>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">{tier.description}</p>
+                  <p className="text-3xl font-bold mb-4 text-blue-600 dark:text-blue-400">£{tier.price}</p>
+                  <p className="text-gray-600 dark:text-gray-400 mb-6">Duration: {tier.duration} days</p>
                   <button
                     onClick={() => handleSubscribe(tier.id)}
                     className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300"
@@ -81,16 +72,14 @@ export default function SubscribePage() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* Call to Action Section */}
-      <section className="py-16 bg-blue-600 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to unlock premium features?</h2>
-          <p className="text-xl mb-8">Choose a plan that suits your needs and start enjoying exclusive benefits today.</p>
+          <div className="text-center">
+            <Link href="/" className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300">
+              Back to Home
+            </Link>
+          </div>
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
   );
 }

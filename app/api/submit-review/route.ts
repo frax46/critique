@@ -9,7 +9,6 @@ const prisma = new PrismaClient();
 const reviewSchema = z.object({
   address: z.string().min(1),
   postcode: z.string().min(1),
-  houseNumber: z.string().min(1),
   answers: z.array(z.object({
     questionId: z.string(),
     rating: z.number().min(1).max(5),
@@ -40,14 +39,14 @@ export async function POST(req: Request) {
     });
 
     const body = await req.json();
-    const { address, postcode, houseNumber, answers } = reviewSchema.parse(body);
+    const { address, postcode, answers } = reviewSchema.parse(body);
 
     // Check if the property already exists
     let property = await prisma.property.findFirst({
       where: {
         address,
         postcode,
-        houseNumber,
+    
       },
     });
 
@@ -56,8 +55,8 @@ export async function POST(req: Request) {
       property = await prisma.property.create({
         data: {
           address,
-          postcode,
-          houseNumber,
+          postcode: postcode.replace(/\s/g, ''), // Remove all spaces from postcode
+        
           userId: user.id,
         },
       });

@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import * as z from 'zod';
-
-const prisma = new PrismaClient();
 
 const questionSchema = z.object({
   text: z.string().min(1).max(500),
@@ -10,14 +8,11 @@ const questionSchema = z.object({
 
 export async function GET() {
   try {
-    const questions = await prisma.question.findMany({
-      orderBy: { id: 'desc' }, // Using 'id' instead of 'createdAt' as it's not in the model
-    });
+    const questions = await prisma.question.findMany();
     return NextResponse.json(questions);
   } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
+    console.error('Error fetching questions:', error);
+    return NextResponse.json({ error: 'An error occurred while fetching questions' }, { status: 500 });
   }
 }
 

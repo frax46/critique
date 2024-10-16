@@ -24,11 +24,10 @@ model Property {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   address     String
   postcode    String
-  houseNumber String
   answers     Answer[]
   userId      String   @db.ObjectId
 
-  @@unique([address, postcode, houseNumber])
+  @@unique([address, postcode])
 }
 
 model Question {

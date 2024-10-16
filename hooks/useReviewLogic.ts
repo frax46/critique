@@ -15,35 +15,26 @@ interface Answer {
 }
 
 export function useReviewLogic(propertyId?: string, initialAddress?: string) {
-  const [reviewStep, setReviewStep] = useState(initialAddress ? 1 : 0);
+  const [reviewStep, setReviewStep] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [reviewAddress, setReviewAddress] = useState("");
-  const [postcode, setPostcode] = useState("");
+  const [reviewAddress, setReviewAddressState] = useState(initialAddress || "");
+  const [postcode, setPostcodeState] = useState("");
   const [answers, setAnswers] = useState<Answer[]>([]);
   const router = useRouter();
   const { user, isLoaded } = useUser();
 
   useEffect(() => {
     fetchQuestions();
-    if (initialAddress) {
-      parseInitialAddress(initialAddress);
-    }
-  }, [initialAddress]);
-
-  const parseInitialAddress = (address: string) => {
-    const parts = address.split(",").map((part) => part.trim());
-    if (parts.length >= 3) {
-      setReviewAddress(parts.slice(0, -2).join(", "));
-      setPostcode(parts[parts.length - 2]);
-    } else {
-      setReviewAddress(address);
-    }
-  };
+  }, []);
 
   const fetchQuestions = async () => {
     try {
       const response = await fetch("/api/questions");
+      if (!response.ok) {
+        throw new Error('Failed to fetch questions');
+      }
       const data = await response.json();
+      console.log('Fetched questions:', data);
       setQuestions(data);
     } catch (error) {
       console.error("Error fetching questions:", error);
@@ -53,10 +44,8 @@ export function useReviewLogic(propertyId?: string, initialAddress?: string) {
 
   const handleNextStep = () => {
     if (reviewStep === 0) {
-      if (!reviewAddress || !postcode) {
-        toast.error(
-          "Please enter a complete address, including postcode and house number"
-        );
+      if (!reviewAddress.trim() || !postcode.trim()) {
+        toast.error("Please enter a complete address, including postcode");
         return;
       }
       setReviewStep(1);
@@ -67,11 +56,7 @@ export function useReviewLogic(propertyId?: string, initialAddress?: string) {
       const currentAnswer = answers.find(
         (a) => a.questionId === questions[reviewStep - 1].id
       );
-      if (
-        !currentAnswer ||
-        currentAnswer.rating === 0 ||
-        !currentAnswer.text.trim()
-      ) {
+      if (!currentAnswer || currentAnswer.rating === 0 || !currentAnswer.text.trim()) {
         toast.error("Please provide a rating and answer");
         return;
       }
@@ -79,15 +64,13 @@ export function useReviewLogic(propertyId?: string, initialAddress?: string) {
 
     if (reviewStep < questions.length) {
       setReviewStep(reviewStep + 1);
-    } else if (reviewStep === questions.length) {
-      setReviewStep(questions.length + 1);
     } else {
       handleSubmitReview();
     }
   };
 
   const handlePreviousStep = () => {
-    setReviewStep(reviewStep - 1);
+    setReviewStep(Math.max(0, reviewStep - 1));
   };
 
   const handleSubmitReview = async () => {
@@ -105,7 +88,7 @@ export function useReviewLogic(propertyId?: string, initialAddress?: string) {
       const reviewData = {
         propertyId,
         address: reviewAddress,
-        postcode, // Include postcode
+        postcode,
         answers: answers.map((answer) => ({
           questionId: answer.questionId,
           rating: answer.rating,
@@ -123,14 +106,12 @@ export function useReviewLogic(propertyId?: string, initialAddress?: string) {
       });
 
       if (response.ok) {
-        const data = await response.json();
         toast.success("Review submitted successfully");
         setReviewStep(0);
         setAnswers([]);
         router.push("/thank-you");
       } else {
         const errorData = await response.json();
-        console.error("Server response:", errorData);
         throw new Error(errorData.error || "Failed to submit review");
       }
     } catch (error) {
@@ -145,11 +126,11 @@ export function useReviewLogic(propertyId?: string, initialAddress?: string) {
 
   const handleRatingChange = (questionId: string, rating: number) => {
     setAnswers((prev) => {
-      const existingAnswer = prev.find((a) => a.questionId === questionId);
-      if (existingAnswer) {
-        return prev.map((a) =>
-          a.questionId === questionId ? { ...a, rating } : a
-        );
+      const existingAnswerIndex = prev.findIndex((a) => a.questionId === questionId);
+      if (existingAnswerIndex > -1) {
+        const updatedAnswers = [...prev];
+        updatedAnswers[existingAnswerIndex] = { ...updatedAnswers[existingAnswerIndex], rating };
+        return updatedAnswers;
       } else {
         return [...prev, { questionId, rating, text: "" }];
       }
@@ -158,15 +139,29 @@ export function useReviewLogic(propertyId?: string, initialAddress?: string) {
 
   const handleTextChange = (questionId: string, text: string) => {
     setAnswers((prev) => {
-      const existingAnswer = prev.find((a) => a.questionId === questionId);
-      if (existingAnswer) {
-        return prev.map((a) =>
-          a.questionId === questionId ? { ...a, text } : a
-        );
+      const existingAnswerIndex = prev.findIndex((a) => a.questionId === questionId);
+      if (existingAnswerIndex > -1) {
+        const updatedAnswers = [...prev];
+        updatedAnswers[existingAnswerIndex] = { ...updatedAnswers[existingAnswerIndex], text };
+        return updatedAnswers;
       } else {
         return [...prev, { questionId, rating: 0, text }];
       }
     });
+  };
+
+  const getCurrentQuestion = () => {
+    return questions[reviewStep - 1] || null;
+  };
+
+  const setReviewAddress = (address: string) => {
+    console.log("Setting review address:", address);
+    setReviewAddressState(address);
+  };
+
+  const setPostcode = (code: string) => {
+    console.log("Setting postcode:", code);
+    setPostcodeState(code);
   };
 
   return {
@@ -181,6 +176,8 @@ export function useReviewLogic(propertyId?: string, initialAddress?: string) {
     handlePreviousStep,
     handleRatingChange,
     handleTextChange,
-    handleSubmitReview, // Add this to the returned object
+    handleSubmitReview,
+    getCurrentQuestion,
+    setReviewStep,
   };
 }

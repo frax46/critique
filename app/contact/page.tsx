@@ -2,61 +2,52 @@ import Link from 'next/link';
 
 export default function Contact() {
   return (
-    <main className="min-h-screen w-full bg-blue-50">
-      {/* Hero Section */}
-      <section className="relative h-64 w-full flex flex-col items-center justify-center bg-blue-600 text-white">
-        <div className="absolute inset-0 bg-blue-900 bg-opacity-40" />
-        <div className="relative z-10 text-center px-4">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">Contact Us</h1>
-          <p className="text-xl">We'd love to hear from you</p>
-        </div>
-      </section>
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center p-4">
+      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 max-w-4xl w-full">
+        {/* Decorative SVG shapes */}
+        <svg className="absolute top-0 left-0 -mt-12 -ml-12 text-blue-500 opacity-50 h-24 w-24" fill="currentColor" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" />
+        </svg>
+        <svg className="absolute bottom-0 right-0 -mb-12 -mr-12 text-purple-500 opacity-50 h-24 w-24" fill="currentColor" viewBox="0 0 100 100">
+          <rect x="10" y="10" width="80" height="80" rx="20" />
+        </svg>
 
-      {/* Contact Section */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-xl overflow-hidden">
-            <div className="md:flex">
-              {/* Left side: SVG illustration */}
-              <div className="md:w-1/2 p-6 flex items-center justify-center bg-blue-100">
-                <svg className="w-full h-auto max-w-sm" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M22 6C22 4.9 21.1 4 20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6ZM20 6L12 11L4 6H20ZM20 18H4V8L12 13L20 8V18Z" fill="currentColor" className="text-blue-600" />
-                </svg>
-              </div>
+        <div className="relative z-10">
+          <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-6 text-center">Contact Us</h1>
+          
+          <div className="md:flex">
+            {/* Left side: SVG illustration */}
+            <div className="md:w-1/2 p-6 flex items-center justify-center">
+              <svg className="w-full h-auto max-w-sm text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 6C22 4.9 21.1 4 20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6ZM20 6L12 11L4 6H20ZM20 18H4V8L12 13L20 8V18Z" fill="currentColor" />
+              </svg>
+            </div>
 
-              {/* Right side: Contact information */}
-              <div className="md:w-1/2 p-6 md:p-8">
-                <h2 className="text-3xl font-bold mb-4 text-blue-800">Get in Touch</h2>
-                <p className="text-lg text-gray-600 mb-6">We're here to help and answer any question you might have. We look forward to hearing from you.</p>
-                <Link 
-                  href="mailto:contact@example.com" 
-                  className="inline-block text-xl font-semibold text-blue-600 hover:text-blue-700 transition-colors duration-300"
-                >
-                  contact@example.com
-                </Link>
-                <p className="mt-4 text-gray-600">
-                  123 Main Street<br />
-                  City, State 12345<br />
-                  (123) 456-7890
-                </p>
-              </div>
+            {/* Right side: Contact information */}
+            <div className="md:w-1/2 p-6">
+              <h2 className="text-3xl font-bold mb-4 text-blue-800 dark:text-blue-400">Get in Touch</h2>
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">We&apos;re here to help and answer any question you might have. We look forward to hearing from you.</p>
+              <Link 
+                href="mailto:contact@example.com" 
+                className="inline-block text-xl font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-300"
+              >
+                contact@example.com
+              </Link>
+              <p className="mt-4 text-gray-600 dark:text-gray-300">
+                123 Main Street<br />
+                City, State 12345<br />
+                (123) 456-7890
+              </p>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Call to Action Section */}
-      <section className="py-16 bg-blue-600 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to find your dream home?</h2>
-          <p className="text-xl mb-8">Join thousands of satisfied homeowners who found their perfect match with us.</p>
-          <Link href="/search">
-            <button className="bg-white text-blue-600 px-8 py-3 rounded-full font-semibold text-lg hover:bg-blue-100 transition duration-300 transform hover:scale-105 shadow-lg">
-              Start Searching
-            </button>
-          </Link>
+          <div className="mt-8 text-center">
+            <Link href="/" className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300">
+              Back to Home
+            </Link>
+          </div>
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
   );
 }
