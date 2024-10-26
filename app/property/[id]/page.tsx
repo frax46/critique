@@ -7,6 +7,8 @@ import { ReviewLink } from '@/app/components/property/ReviewLink';
 
 const prisma = new PrismaClient();
 
+export const dynamic = 'force-dynamic';
+
 async function getPropertyWithUsers(id: string) {
   const property = await prisma.property.findUnique({
     where: { id },
@@ -87,14 +89,13 @@ export default async function PropertyPage({ params }: { params: { id: string } 
         id: property.id,
         address: property.address,
         postcode: property.postcode,
-        houseNumber: property.houseNumber,
         averageRating: averageRating,
         answers: property.answers
       }} />
       <div className="mt-4">
         <StartReviewButton 
           propertyId={property.id} 
-          propertyAddress={`${property.address}, ${property.postcode}, ${property.houseNumber}`} 
+          propertyAddress={`${property.address}, ${property.postcode}`} 
         />
       </div>
       <div className="border-t border-gray-200 my-6"></div>

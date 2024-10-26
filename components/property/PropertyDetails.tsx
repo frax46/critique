@@ -5,7 +5,6 @@ interface PropertyDetailsProps {
     id: string;
     address: string;
     postcode: string;
-    houseNumber: string;
     averageRating: number;
     answers: Array<{ rating: number; userId: string }>;
   };
@@ -28,7 +27,6 @@ export function PropertyDetails({ property }: PropertyDetailsProps) {
         </div>
       </div>
       <div className="mt-4">
-        <p>House Number: <span className="font-semibold">{property.houseNumber}</span></p>
         {averageRating !== null && (
           <div className="flex items-center mt-2">
             <span className="text-lg font-semibold mr-2">Rating:</span>

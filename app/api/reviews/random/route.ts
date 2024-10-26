@@ -4,11 +4,11 @@ import prisma from '@/lib/prisma';
 export async function GET() {
   try {
     const randomReviews = await prisma.answer.findMany({
-      where: {
-        rating: {
-          gte: 4 // Only fetch reviews with a rating of 4 or higher
-        }
-      },
+      // where: {
+      //   rating: {
+      //     gte: 4 // Only fetch reviews with a rating of 4 or higher
+      //   }
+      // },
       include: {
         user: {
           select: {

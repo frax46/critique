@@ -14,18 +14,20 @@ interface Answer {
   text: string;
 }
 
-export function useReviewLogic(propertyId?: string, initialAddress?: string) {
+export function useReviewLogic(propertyId?: string, initialAddress?: string, initPostcode?: string) {
   const [reviewStep, setReviewStep] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [reviewAddress, setReviewAddressState] = useState(initialAddress || "");
-  const [postcode, setPostcodeState] = useState("");
+  const [postcode, setPostcodeState] = useState(initPostcode || "");
   const [answers, setAnswers] = useState<Answer[]>([]);
   const router = useRouter();
   const { user, isLoaded } = useUser();
 
   useEffect(() => {
+    console.log('postcode', postcode);
+   
     fetchQuestions();
-  }, []);
+  }, [postcode]);
 
   const fetchQuestions = async () => {
     try {

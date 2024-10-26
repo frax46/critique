@@ -9,7 +9,9 @@ async function getRandomReviews() {
   if (!res.ok) {
     throw new Error('Failed to fetch reviews');
   }
+  
   return res.json();
+  
 }
 
 export default async function Home() {

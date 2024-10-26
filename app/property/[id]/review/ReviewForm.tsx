@@ -1,45 +1,45 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FaStar } from 'react-icons/fa';
-import toast, { Toaster } from 'react-hot-toast'; // Add toast import here
+import toast, { Toaster } from 'react-hot-toast';
 import { useReviewLogic } from '@/hooks/useReviewLogic';
 
 interface ReviewFormProps {
   propertyId: string;
   initialAddress: string;
+  postcode: string;
 }
 
-export function ReviewForm({ propertyId, initialAddress }: ReviewFormProps) {
-  const {
-    reviewStep,
-    questions,
-    reviewAddress,
-    setReviewAddress,
-    postcode,
-    setPostcode,
-    houseNumber,
-    setHouseNumber,
-    answers,
-    handleNextStep,
-    handlePreviousStep,
-    handleRatingChange,
-    handleTextChange,
-    handleSubmitReview,
-  } = useReviewLogic(propertyId, initialAddress);
+export function ReviewForm({ propertyId, initialAddress, postcode }: ReviewFormProps) {
+  const reviewLogic = useReviewLogic(propertyId, initialAddress, postcode);
+
+  useEffect(() => {
+    // Extract postcode from initialAddress
+    const postcodeRegex = /\b[A-Z]{1,2}\d[A-Z\d]? \d[A-Z]{2}\b/;
+    const match = initialAddress.match(postcodeRegex);
+    if (match) {
+      const postcode = match[0];
+      const addressWithoutPostcode = initialAddress.replace(postcode, '').trim();
+      reviewLogic.setReviewAddress(addressWithoutPostcode);
+      reviewLogic.setPostcode(postcode);
+    } else {
+      reviewLogic.setReviewAddress(initialAddress);
+    }
+  }, [initialAddress]);
 
   const renderStars = (questionId: string) => {
-    const currentRating = answers.find((a) => a.questionId === questionId)?.rating || 0;
+    const currentRating = reviewLogic.answers.find((a) => a.questionId === questionId)?.rating || 0;
     return (
       <div className="flex space-x-1">
         {[1, 2, 3, 4, 5].map((star) => (
           <FaStar
             key={star}
             className={`cursor-pointer ${star <= currentRating ? 'text-yellow-400' : 'text-gray-300'}`}
-            onClick={() => handleRatingChange(questionId, star)}
+            onClick={() => reviewLogic.handleRatingChange(questionId, star)}
           />
         ))}
       </div>
@@ -47,63 +47,56 @@ export function ReviewForm({ propertyId, initialAddress }: ReviewFormProps) {
   };
 
   const renderReviewStep = () => {
-    if (reviewStep === 0) {
+    if (reviewLogic.reviewStep === 0) {
       return (
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold">Confirm Property Address</h2>
+          <h2 className="text-2xl font-bold">Confirm Property Details</h2>
           <Input
-            placeholder="Enter address"
-            value={reviewAddress}
-            onChange={(e) => setReviewAddress(e.target.value)}
-          />
-          <Input
-            placeholder="Enter postcode"
-            value={postcode}
-            onChange={(e) => setPostcode(e.target.value)}
+            placeholder="Full Address (without postcode)"
+            value={reviewLogic.reviewAddress}
+            onChange={(e) => reviewLogic.setReviewAddress(e.target.value)}
+            required
           />
           <Input
-            placeholder="Enter house number"
-            value={houseNumber}
-            onChange={(e) => setHouseNumber(e.target.value)}
+            placeholder="Postcode"
+            value={reviewLogic.postcode}
+            onChange={(e) => reviewLogic.setPostcode(e.target.value)}
+            required
           />
-        </div>
-      );
-    } else if (reviewStep <= questions.length) {
-      const question = questions[reviewStep - 1];
-      return (
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold">Question {reviewStep} of {questions.length}</h2>
-          <p className="text-lg">{question.text}</p>
-          {renderStars(question.id)}
-          <Textarea
-            placeholder="Your answer"
-            value={answers.find((a) => a.questionId === question.id)?.text || ''}
-            onChange={(e) => handleTextChange(question.id, e.target.value)}
-          />
-        </div>
-      );
-    } else {
-      return (
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold">Review Summary</h2>
-          <p>Address: {reviewAddress}</p>
-          <p>Postcode: {postcode}</p>
-          <p>House Number: {houseNumber}</p>
-          {answers.map((answer, index) => (
-            <div key={answer.questionId} className="border-t pt-2">
-              <p>Question {index + 1}: {questions[index].text}</p>
-              <p>Rating: {answer.rating}</p>
-              <p>Answer: {answer.text}</p>
-            </div>
-          ))}
         </div>
       );
     }
+
+    const currentQuestion = reviewLogic.getCurrentQuestion();
+    
+    if (!currentQuestion) {
+      return (
+        <div className="text-center">
+          <p className="text-xl text-red-600 mb-4">An error occurred while loading the question.</p>
+          <Button onClick={() => reviewLogic.setReviewStep(0)} className="bg-blue-500 hover:bg-blue-600 text-white">
+            Back to Start
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold">Question {reviewLogic.reviewStep} of {reviewLogic.questions.length}</h2>
+        <p className="text-lg">{currentQuestion.text}</p>
+        {renderStars(currentQuestion.id)}
+        <Textarea
+          placeholder="Your answer"
+          value={reviewLogic.answers.find((a) => a.questionId === currentQuestion.id)?.text || ''}
+          onChange={(e) => reviewLogic.handleTextChange(currentQuestion.id, e.target.value)}
+        />
+      </div>
+    );
   };
 
   const handleSubmit = async () => {
     try {
-      await handleSubmitReview();
+      await reviewLogic.handleSubmitReview();
     } catch (error) {
       console.error('Error submitting review:', error);
       toast.error('Failed to submit review. Please try again.');
@@ -114,14 +107,14 @@ export function ReviewForm({ propertyId, initialAddress }: ReviewFormProps) {
     <div className="w-full max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
       {renderReviewStep()}
       <div className="flex justify-between mt-6">
-        {reviewStep > 0 && (
-          <Button onClick={handlePreviousStep} variant="outline">Previous</Button>
+        {reviewLogic.reviewStep > 0 && (
+          <Button onClick={reviewLogic.handlePreviousStep} variant="outline">Previous</Button>
         )}
         <Button 
-          onClick={reviewStep <= questions.length ? handleNextStep : handleSubmit} 
-          className="ml-auto"
+          onClick={reviewLogic.reviewStep < reviewLogic.questions.length ? reviewLogic.handleNextStep : handleSubmit} 
+          className="ml-auto bg-blue-500 hover:bg-blue-600 text-white"
         >
-          {reviewStep <= questions.length ? 'Next' : 'Submit Review'}
+          {reviewLogic.reviewStep < reviewLogic.questions.length ? 'Next' : 'Submit Review'}
         </Button>
       </div>
       <Toaster />
