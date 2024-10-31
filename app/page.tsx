@@ -37,9 +37,15 @@ export default async function Home() {
         />
         <div className="absolute inset-0 bg-blue-900 bg-opacity-40" />
         <div className="relative z-10 text-center px-4">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 transition-all duration-300 ease-in-out transform hover:scale-105">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 transition-all duration-300 ease-in-out transform hover:scale-105 z-20 relative">
             Find the house of your dreams
           </h1>
+          <p className="text-white mb-8 text-left">
+            The best way to find your dream home.
+            <br />
+            We have the best community of people who are looking for their next nest
+          </p>
+          <Image src="/bowl.png" alt="Logo" width={600} height={600} className="absolute right-0 top-0 z-10 " />
           <Link href="/search">
             <button className="get-started-btn bg-gradient-to-r from-blue-500 to-purple-600 text-white px-10 py-4 rounded-full font-bold text-xl hover:from-blue-600 hover:to-purple-700 transition duration-300 shadow-lg mb-8">
               Get Started
