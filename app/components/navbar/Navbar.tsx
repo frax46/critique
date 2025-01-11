@@ -48,7 +48,7 @@ const Navbar = () => {
               Home
             </NavLink>
             <NavLink href="/search" active={pathname === "/search"}>
-              <FaSearch className="text-blue-600" />
+              <FaSearch className="text-green-600" />
             </NavLink>
             {user && (
               <>
@@ -93,7 +93,7 @@ const Navbar = () => {
               <UserButton afterSignOutUrl="/" />
             ) : (
               <SignInButton>
-                <button className="bg-blue-600 text-white px-4 py-1 rounded-full shadow-md hover:bg-blue-700 transition duration-300 text-sm font-semibold">
+                <button className="bg-green-600 text-white px-4 py-1 rounded-full shadow-md hover:bg-green-700 transition duration-300 text-sm font-semibold">
                   Login
                 </button>
               </SignInButton>
@@ -102,7 +102,7 @@ const Navbar = () => {
           <div className="md:hidden">
             <button
               onClick={toggleMenu}
-              className="text-blue-600 focus:outline-none"
+              className="text-green-600 focus:outline-none"
             >
               {isOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
             </button>
@@ -149,7 +149,7 @@ const Navbar = () => {
             </div>
           ) : (
             <SignInButton>
-              <button className="block w-full text-left px-4 py-2 text-blue-600 hover:bg-blue-50 transition duration-300">
+              <button className="block w-full text-left px-4 py-2 text-green-600 hover:bg-green-50 transition duration-300">
                 Login
               </button>
             </SignInButton>
@@ -174,11 +174,11 @@ const NavLink: React.FC<NavLinkProps> = ({
   mobile = false,
 }) => {
   const baseClasses = "transition duration-300 font-medium text-sm";
-  const desktopClasses = `text-blue-600 hover:text-blue-800 px-3 py-1 rounded-full ${
-    active ? "bg-blue-100" : "hover:bg-blue-50"
+  const desktopClasses = `text-green-600 hover:text-green-800 px-3 py-1 rounded-full ${
+    active ? "bg-green-100" : "hover:bg-green-50"
   }`;
   const mobileClasses = `block px-4 py-2 ${
-    active ? "bg-blue-100 text-blue-800" : "text-blue-600 hover:bg-blue-50"
+    active ? "bg-green-100 text-green-800" : "text-green-600 hover:bg-green-50"
   }`;
 
   return (
